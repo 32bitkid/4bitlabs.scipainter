@@ -25,13 +25,20 @@ import {
 } from '@watercolorizer/convolution';
 import { trace } from '@watercolorizer/tracer';
 import { watercolorize } from '@watercolorizer/watercolorizer';
+import { uniformFloat64 } from 'pure-rand/distribution/uniformFloat64';
+import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
 import Rough from 'roughjs';
 import type { RoughCanvas } from 'roughjs/bundled/canvas.js';
 import M from 'transformation-matrix';
-
-import { gaussRng } from './gauss-rng.js';
+import { createGaussRng } from './gauss-rng.js';
 import { deg2Rad } from './math-helpers.js';
 import { applyMatrix, pathPoly, svgPoly } from './poly-helpers.js';
+import { rect } from './rect.js';
+
+const SEED = 42; // Date.now() ^ (Math.random() * 0x100000000);
+const rng = xoroshiro128plus(SEED);
+const random = () => uniformFloat64(rng);
+const gaussRng = createGaussRng({ rng: () => random() });
 
 const PALETTE = IBM5153Contrast(TRUE_CGA_PALETTE, 0.7);
 
@@ -105,53 +112,46 @@ const payload = decompress('sci0', header.compression, resourcePayload);
 const pic = parsePic(payload, { defer: true });
 
 const canvas = createCanvas(320 * 5, 190 * 6);
-const rc: RoughCanvas = Rough.canvas(canvas);
+const rc: RoughCanvas = Rough.canvas(canvas, { seed: SEED });
 const ctx = canvas.getContext('2d');
 
 const screenSpace = M.scale(5, 6);
 
 const paper = await loadImage('/Users/jholmes/Pictures/paper.png');
-
-const rect = (
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-): [number, number][] => [
-  [x, y],
-  [x, y + h],
-  [x + w, y + h],
-  [x + w, y],
-];
-
-ctx.save();
-ctx.setTransform(
-  M.compose([
-    M.scale(0.75, 0.75, canvas.width / 2, canvas.height / 2),
-    M.rotate(gaussRng(0, deg2Rad(0.5)), canvas.width / 2, canvas.height / 2),
-  ]),
-);
-ctx.shadowColor = 'rgba(0 0 0 / 0.75)';
-ctx.shadowOffsetX = 10;
-ctx.shadowOffsetY = 8;
-ctx.shadowBlur = 10;
-ctx.fillStyle = ctx.createPattern(paper, 'repeat');
-
-for (const path of watercolorize(
-  rect(-100, -100, canvas.width + 200, canvas.height + 200),
-  {
+const paperPaths = [
+  ...watercolorize(rect(-100, -100, canvas.width + 200, canvas.height + 200), {
+    random,
     preEvolutions: 0,
     evolutions: 1,
     layersPerEvolution: 1,
     simplifyEachEvolution: 4,
     vertexWeights: [0.025, 0.025, 0.025, 0.025],
-  },
-)) {
+  }),
+];
+const paperMatrix = M.compose([
+  M.scale(0.75, 0.75, canvas.width / 2, canvas.height / 2),
+  M.rotate(gaussRng(0, deg2Rad(0.25)), canvas.width / 2, canvas.height / 2),
+]);
+const paperPattern = ctx.createPattern(paper, 'repeat');
+paperPattern.setTransform(
+  M.compose(
+    M.rotate(random() * Math.PI * 2),
+    M.translate(random() * paper.width, random() * paper.height),
+  ),
+);
+
+ctx.save();
+ctx.shadowColor = 'rgba(0 0 0 / 0.75)';
+ctx.shadowOffsetX = 10;
+ctx.shadowOffsetY = 8;
+ctx.shadowBlur = 10;
+ctx.fillStyle = 'white'; // paperPattern;
+ctx.setTransform(paperMatrix);
+for (const path of paperPaths) {
   ctx.beginPath();
   pathPoly(ctx, path);
   ctx.fill();
 }
-
 ctx.restore();
 
 ctx.setTransform(
@@ -159,7 +159,7 @@ ctx.setTransform(
     M.scale(0.7, 0.7, canvas.width / 2, canvas.height / 2),
     M.translate(gaussRng(0, 5), gaussRng(0, 6)),
     M.rotate(
-      gaussRng(0, deg2Rad(1)),
+      gaussRng(0, deg2Rad(0.5)),
       canvas.width / 2 + gaussRng(0, 50),
       canvas.height / 2 + gaussRng(0, 50),
     ),
@@ -188,7 +188,7 @@ for (const [idx, cmd, layers, meta] of generatePic(pic)) {
     .map((ring) => svgPoly(applyMatrix(screenSpace, ring)))
     .join(' ');
 
-  const fillStyle = Math.random() < 0.5 ? 'zigzag' : 'hachure';
+  const fillStyle = random() < 0.5 ? 'zigzag' : 'hachure';
 
   rc.path(pathData, {
     fill: resolveColor(
@@ -229,6 +229,7 @@ for (const [idx, cmd, layers, meta] of generatePic(pic)) {
 
   const allPolys = [...rings].map((ring) => [
     ...watercolorize(applyMatrix(screenSpace, ring), {
+      random,
       preEvolutions: 2,
       evolutions,
       layersPerEvolution,
@@ -395,5 +396,16 @@ for (const [, cmd, , meta] of generatePic(pic)) {
     default:
   }
 }
+
+ctx.save();
+ctx.fillStyle = paperPattern;
+ctx.setTransform(paperMatrix);
+ctx.globalCompositeOperation = 'multiply';
+for (const path of paperPaths) {
+  ctx.beginPath();
+  pathPoly(ctx, path);
+  ctx.fill();
+}
+ctx.restore();
 
 process.stdout.write(await canvas.encode('png'));

@@ -14,17 +14,18 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^1.0.2",
     "@4bitlabs/color": "^4.0.1",
     "@4bitlabs/color-space": "^3.0.1",
     "@4bitlabs/resize-filters": "^2.0.1",
     "@4bitlabs/sci0": "^6.1.1",
     "@4bitlabs/sci0-renderer": "^1.1.1",
+    "@napi-rs/canvas": "^1.0.2",
     "@watercolorizer/convolution": "^2.0.2",
     "@watercolorizer/tracer": "^3.0.0",
     "@watercolorizer/watercolorizer": "^2.0.1",
-    "transformation-matrix": "^3.1.0",
-    "roughjs": "^4.6.6"
+    "pure-rand": "^8.4.2",
+    "roughjs": "^4.6.6",
+    "transformation-matrix": "^3.1.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.4",

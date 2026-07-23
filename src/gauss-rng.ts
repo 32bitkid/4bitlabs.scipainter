@@ -12,3 +12,7 @@ export function gaussRng(
   const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
   return z * σ + μ;
 }
+
+export const createGaussRng =
+  (options?: RngOptions) => (μ: number, σ: number) =>
+    gaussRng(μ, σ, options);
