@@ -20,9 +20,9 @@
     "@4bitlabs/sci0": "^6.1.1",
     "@4bitlabs/sci0-renderer": "^1.1.1",
     "@napi-rs/canvas": "^1.0.2",
-    "@watercolorizer/convolution": "^2.0.2",
-    "@watercolorizer/tracer": "^3.0.0",
-    "@watercolorizer/watercolorizer": "^2.0.1",
+    "@watercolorizer/convolution": "^2.1.0",
+    "@watercolorizer/tracer": "^3.2.0",
+    "@watercolorizer/watercolorizer": "^2.1.0",
     "pure-rand": "^8.4.2",
     "roughjs": "^4.6.6",
     "transformation-matrix": "^3.1.0"
