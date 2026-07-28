@@ -1,5 +1,8 @@
 import { DrawMode } from '@4bitlabs/sci0';
-import type { generatePic } from '@4bitlabs/sci0-renderer';
+import type {
+  generatePic,
+  IntermediatePicState,
+} from '@4bitlabs/sci0-renderer';
 import type { SKRSContext2D } from '@napi-rs/canvas';
 import { convolution1D, K_GAUSS_BLUR_5 } from '@watercolorizer/convolution';
 import { trace } from '@watercolorizer/tracer';
@@ -10,7 +13,6 @@ import type { RandomGenerator } from 'pure-rand/types/RandomGenerator';
 import type { Matrix } from 'transformation-matrix';
 
 import { createGaussRng } from '../math/gauss-rng.js';
-import type { AsIterable } from '../utils/as-iterable.js';
 import { ensureExists } from '../utils/ensure-exists.js';
 import { shuffled } from '../utils/shuffled.js';
 import { extractDirtyPixels } from './helpers/extract-dirty-pixels.js';
@@ -22,7 +24,7 @@ export async function watercolorLayer(
   rng: RandomGenerator,
   ctx: SKRSContext2D,
   screenSpace: Matrix,
-  picData: AsIterable<ReturnType<typeof generatePic>>,
+  picData: IntermediatePicState[],
   afterEach: () => Promise<void> | void,
 ) {
   const uf64Rng = () => uniformFloat64(rng);

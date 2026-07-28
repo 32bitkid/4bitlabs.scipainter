@@ -1,5 +1,8 @@
 import { DrawMode } from '@4bitlabs/sci0';
-import type { generatePic } from '@4bitlabs/sci0-renderer';
+import type {
+  generatePic,
+  IntermediatePicState,
+} from '@4bitlabs/sci0-renderer';
 import type { SKRSContext2D } from '@napi-rs/canvas';
 import { uniformFloat64 } from 'pure-rand/distribution/uniformFloat64';
 import type { RandomGenerator } from 'pure-rand/types/RandomGenerator';
@@ -9,7 +12,6 @@ import {
   createGaussRng,
   type GaussianDistributionRng,
 } from '../math/gauss-rng.js';
-import type { AsIterable } from '../utils/as-iterable.js';
 import { applyMatrixFn } from './helpers/polygons.js';
 import { resolveColor, toCSS } from './helpers/resolve-color.js';
 
@@ -25,7 +27,7 @@ export async function inkLayer(
   ctx: SKRSContext2D,
   rc: RoughCanvas,
   screenSpace: Matrix,
-  picData: AsIterable<ReturnType<typeof generatePic>>,
+  picData: IntermediatePicState[],
   afterEach: () => Promise<void> | void,
 ) {
   const uf64Rng = () => uniformFloat64(rng);
