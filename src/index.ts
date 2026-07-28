@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { readFile } from 'node:fs/promises';
+import { createWriteStream } from 'node:fs';
+import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   decompress,
@@ -9,102 +10,129 @@ import {
   ResourceMatchers,
   ResourceTypes,
 } from '@4bitlabs/sci0';
-import { generatePic } from '@4bitlabs/sci0-renderer';
-import { createCanvas } from '@napi-rs/canvas';
-import { uniformFloat64 } from 'pure-rand/distribution/uniformFloat64';
-import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
-import Rough from 'roughjs';
-import type { RoughCanvas } from 'roughjs/bundled/canvas.js';
-import M from 'transformation-matrix';
-import { inkLayer } from './drawing/ink-layer.js';
-import { markerLayer } from './drawing/marker-layer.js';
-import { paperWrapper } from './drawing/paper-wrapper.js';
-import { watercolorLayer } from './drawing/watercolor-layer.js';
-import { deg2Rad } from './math/angles.js';
-import { createGaussRng } from './math/gauss-rng.js';
-import { createCapture } from './utils/create-capture.js';
+import { Command, InvalidArgumentError, Option } from 'commander';
+import { render } from './drawing/render.js';
 import { ensureExists } from './utils/ensure-exists.js';
 
-const SEED = Date.now() ^ (Math.random() * 0x1_0000_0000);
-const rng = xoroshiro128plus(SEED);
-const random = () => uniformFloat64(rng);
-const gaussRng = createGaussRng(random);
+async function findAndParsePic(
+  rootPath: string,
+  picId: number,
+  engine: 'sci0' | 'sci01',
+) {
+  const files = await readdir(rootPath);
+  const matchFn = ResourceMatchers.match({
+    number: picId,
+    type: ResourceTypes.PIC_TYPE,
+  });
 
-const rootPath = '/Volumes/share/sierra/lbow1/';
-const matchFn = ResourceMatchers.match({
-  number: 128,
-  type: ResourceTypes.PIC_TYPE,
-});
-// const rootPath = '/Volumes/share/sierra/pq2/';
-// const matchFn = ResourceMatchers.match({
-//   number: 25,
-//   type: ResourceTypes.PIC_TYPE,
-// });
-// const rootPath = '/Volumes/share/sierra/sq3/';
-// const matchFn = ResourceMatchers.match({
-//   number: 30,
-//   type: ResourceTypes.PIC_TYPE,
-// });
-// const rootPath = '/Volumes/share/sierra/camelot/';
-// const matchFn = ResourceMatchers.match({
-//   number: 69,
-//   type: ResourceTypes.PIC_TYPE,
-// });
-// const rootPath = '/Volumes/share/sierra/qg1/';
-// const matchFn = ResourceMatchers.match({
-//   number: 10,
-//   type: ResourceTypes.PIC_TYPE,
-// });
-// const rootPath = '/Volumes/share/sierra/qg2';
-// const matchFn = ResourceMatchers.match({
-//   number: 290,
-//   type: ResourceTypes.PIC_TYPE,
-// });
+  const resourceMapFn = files.find((s) => s.match(/^resource.map$/i));
+  ensureExists(resourceMapFn, `RESOURCE.MAP not found`);
 
-const mappingPath = join(rootPath, 'resource.map');
-const mappings = parseAllMappings(await readFile(mappingPath));
+  if (resourceMapFn === undefined) throw new Error('RESOURCE.MAP not found');
+  const mappingPath = join(rootPath, resourceMapFn);
+  const mappings = parseAllMappings(await readFile(mappingPath));
 
-const match = mappings.find(matchFn);
-ensureExists(match, 'resource not found…');
+  const match = mappings.find(matchFn);
+  ensureExists(match, `Resource PIC:${picId} not found…`);
 
-const resourcePath = join(
-  rootPath,
-  `resource.${match.file.toString(10).padStart(3, '0')}`,
-);
-const [header, resourcePayload] = parseHeaderWithPayload(
-  await readFile(resourcePath),
-  match.offset,
-);
-const payload = decompress('sci0', header.compression, resourcePayload);
+  const resourceFn = files.find((s) => {
+    const ext = match.file.toString(10).padStart(3, '0');
+    return s.match(new RegExp(`^resource.${ext}$`, 'i'));
+  });
+  ensureExists(resourceFn, `${resourceFn} not found…`);
 
-const canvas = createCanvas(320 * 5, 190 * 6);
-const rc: RoughCanvas = Rough.canvas(canvas, { seed: SEED });
-const ctx = canvas.getContext('2d');
+  const resourcePath = join(rootPath, resourceFn);
+  const [header, resourcePayload] = parseHeaderWithPayload(
+    await readFile(resourcePath),
+    match.offset,
+  );
+  const payload = decompress(engine, header.compression, resourcePayload);
+  return parsePic(payload, { defer: true });
+}
 
-const screenSpace = M.scale(5, 6);
+const program = new Command();
 
-const cap = createCapture(canvas);
-
-await paperWrapper(rng, ctx, async () => {
-  ctx.setTransform(
-    M.compose([
-      M.scale(0.7, 0.7, canvas.width / 2, canvas.height / 2),
-      M.translate(gaussRng(0, 5), gaussRng(0, 6)),
-      M.rotate(
-        gaussRng(0, deg2Rad(0.25)),
-        canvas.width / 2 + gaussRng(0, 50),
-        canvas.height / 2 + gaussRng(0, 50),
-      ),
-    ]),
+program
+  .name('scipainter')
+  .description('Render SCI0/SCI01 pic images in a stylized, artistic style')
+  .version(__APP_VERSION__)
+  .option('-r, --root <path>', 'sci0/sci01 path', '.')
+  .addOption(
+    new Option('-e, --engine <engine>', 'SCI engine version')
+      .choices(['sci0', 'sci01'])
+      .default('sci0'),
   );
 
-  const pic = parsePic(payload, { defer: true });
-  const picData = [...generatePic(pic)];
-  await markerLayer(rng, ctx, rc, screenSpace, picData, cap);
-  await watercolorLayer(rng, ctx, screenSpace, picData, cap);
-  await inkLayer(rng, ctx, rc, screenSpace, picData, cap);
+program
+  .command('render')
+  .argument('<pic>', 'PIC resource number', (source) => Number.parseInt(source))
+  .addOption(
+    new Option(
+      '-o, --output <file>',
+      `output filename. use '-' to output to STDOUT`,
+    ),
+  )
+  .addOption(
+    new Option('-f, --format <format>')
+      .choices(['jpeg', 'webp', 'png'])
+      .default('png'),
+  )
+  .addOption(new Option('--show-seed', 'output the seed to STDERR'))
+  .addOption(
+    new Option(
+      '-s, --seed <seed>',
+      'seed to use for pRNG in base36. default: random number',
+    ).argParser((value) => {
+      const seed = Number.parseInt(value, 36);
+      if (Number.isNaN(seed))
+        throw new InvalidArgumentError('seed must be numeric');
+      return seed;
+    }),
+  )
+  .addOption(
+    new Option('--background-color <color>', 'background color').default(
+      'white',
+    ),
+  )
+  .addOption(new Option('--paper <path>', 'path to optional paper texture'))
+  .action(
+    async (
+      picId: number,
+      actionOptions: {
+        output: string;
+        format: 'png' | 'jpeg' | 'webp';
+        seed: number | undefined;
+        showSeed: boolean;
+        paper: string | undefined;
+        backgroundColor: string;
+      },
+    ) => {
+      const rootPath = program.getOptionValue('root') as string;
+      const engine = program.getOptionValue('engine') as 'sci0' | 'sci01';
+      const format = actionOptions.format;
 
-  await cap();
-});
+      const pic = await findAndParsePic(rootPath, picId, engine);
+      const [canvas, seed] = await render(pic, actionOptions);
 
-process.stdout.write(await canvas.encode('png'));
+      if (actionOptions.showSeed) console.error(`seed: ${seed.toString(36)}`);
+
+      const outFilename = actionOptions.output ?? `render.${format}`;
+      const outfile =
+        outFilename === '-' ? process.stdout : createWriteStream(outFilename);
+
+      switch (format) {
+        case 'jpeg':
+        case 'webp': {
+          outfile.write(await canvas.encode(format, 75));
+          break;
+        }
+        default:
+          outfile.write(await canvas.encode('png'));
+          break;
+      }
+
+      outfile.end();
+    },
+  );
+
+program.parse(process.argv);
