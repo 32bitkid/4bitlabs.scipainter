@@ -25,10 +25,14 @@ export function svgPoly(points: (readonly [number, number])[]): string {
 
 type Point = [x: number, y: number];
 
+export const applyMatrixFn =
+  ({ a, b, c, d, e, f }: Matrix) =>
+  ([x, y]: Readonly<Point>): Point => [a * x + c * y + e, b * x + d * y + f];
+
 export const applyMatrix = (
-  { a, b, c, d, e, f }: Matrix,
+  matrix: Matrix,
   points: Readonly<Point>[],
-): Point[] => points.map(([x, y]) => [a * x + c * y + e, b * x + d * y + f]);
+): Point[] => points.map(applyMatrixFn(matrix));
 
 export function windingOrder(polygon: Readonly<Point>[]): 'cw' | 'ccw' {
   let sum = 0;
