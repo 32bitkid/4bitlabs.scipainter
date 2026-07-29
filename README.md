@@ -92,8 +92,15 @@ $ npx @4bitlabs/scipainter -r /path/to/sci/game render 1 --seed tg609d
 
 ## More Examples 
 
-Quest for Glory 1 Demo PIC.064:
-![Quest for Glory 1 Demo PIC.064](https://raw.githubusercontent.com/32bitkid/4bitlabs.scipainter/main/assets//r.qg1demo.064.webp)
+<figure>
+    <img src="https://raw.githubusercontent.com/32bitkid/4bitlabs.scipainter/main/assets//r.qg1demo.064.webp" alt="Quest for Glory 1 Demo PIC.064">
+    <figcaption>Quest for Glory 1 Demo <code>PIC.064</code></figcaption>
+</figure>
 
-Conquests of Camelot Demo PIC.012:
-![Conquests of Camelot Demo PIC.012](https://raw.githubusercontent.com/32bitkid/4bitlabs.scipainter/main/assets//r.cocdemo.012.webp)
+<figure>
+    <img src="https://raw.githubusercontent.com/32bitkid/4bitlabs.scipainter/main/assets//r.cocdemo.012.webp" alt="Conquests of Camelot Demo Demo PIC.012">
+    <figcaption>Conquests of Camelot Demo <code>PIC.012</code></figcaption>
+</figure>
+
+
+
