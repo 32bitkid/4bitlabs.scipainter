@@ -2,6 +2,12 @@
 
 ## Usage
 
+```
+npx @4bitlabs/scipainter
+```
+
+## Commands
+
 ```text 
 Usage: scipainter [options] [command]
 
@@ -19,35 +25,65 @@ Commands:
   help [command]          display help for command
 ```
 
-## Rendering a single background
+## Rendering a PIC 
 
 ```text
 Usage: scipainter render [options] <pic>
 
 Arguments:
-  pic                    PIC resource number
+  pic                         PIC resource number
 
 Options:
-  -s, --seed <seed>      seed to use for pRNG. default: random number
-  --show-seed            output the seed to STDERR.
-  -f, --format <format>  (choices: "jpeg", "webp", "png", default: "png")
-  -o, --output <file>    output filename. use '-' to output to STDOUT
-  -h, --help             display help for command
+  -o, --output <file>         output filename. use '-' to output to STDOUT
+  -f, --format <format>       (choices: "jpeg", "webp", "png", default: "png")
+  --show-seed                 output the seed to STDERR
+  -s, --seed <seed>           seed to use for pRNG in base36. default: random
+                              number
+  --background-color <color>  background color (default: "white")
+  --paper <path>              path to optional paper texture
+  -h, --help                  display help for command
 ```
 
-Example render, writes to a file named in the current path `render.png` with the output.
+For example, let's say you have an archive of the Space Quest 3 Demo, which can be found
+freely online in several archives, in a folder `./sq3demo`. You can render `PIC.002` from with:
 
 ```bash
-npx @4bitlabs/scipainter -r /path/to/sci/game render 11 
+npx @4bitlabs/scipainter --root ./sq3demo render 2 
 ```
 
 > [!note]
-> How do you know what PIC id to use? You can use `@4bitlabs/scibud` to help 
-> identify what PIC resources are available, and what they look like. See the 
+> _But, how do you know what PIC id to use?_ You can use `@4bitlabs/scibud` to help
+> identify what PIC resources are available for a given game. See the
 > [GitHub documentation](https://github.com/32bitkid/sci.js/tree/main/apps/scibud)
 > for more details.
 
+This will create a image named `render.png`. You can change the format by using the `--format` option.
+
+```bash
+npx @4bitlabs/scipainter -r ./sq3demo render 2 --format jpeg
+```
+
+And also set the output file:
+
+```bash
+npx @4bitlabs/scipainter -r ./sq3demo render 2 -f webp --output sq3demo.002.webp
+```
+
 ## Randomness
 
-Every execution of will select a random seed, which will change each rendering to be unique.
-To `--seed`
+Every render will, by default, select a random seed for the pRNG, this results in reach rendering 
+being unique. Using the same seed should produce the same visual result. Use the `--seed` option to
+manually set the seed, for reproducible images. When rendering, you can use `--show-seed` to output 
+the current seed, even if its random, so it can be reused later.
+
+```bash
+$ npx @4bitlabs/scipainter -r /path/to/sci/game render 1 --show-seed
+seed: tg609d
+
+$ npx @4bitlabs/scipainter -r /path/to/sci/game render 1 --seed tg609d
+```
+
+> [!warning]
+> At this time, stable image regeneration—from the same seed—is _not_ guaranteed between 
+> different versions of this program. So, renderings with `1.1.0` may produce different results
+> than `1.5.0`, even using the same `seed`. This is a short-coming I may address in the future.
