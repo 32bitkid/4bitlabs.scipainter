@@ -1,7 +1,7 @@
 {
   "name": "@4bitlabs/scipainter",
   "version": "1.0.0",
-  "description": "",
+  "description": "CLI utility for rendering SCI0/SCI01 pic resources as hand-drawn images",
   "license": "ISC",
   "author": "J. Holmes <j@holmes.codes>",
   "type": "module",

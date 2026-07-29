@@ -102,5 +102,3 @@ $ npx @4bitlabs/scipainter -r /path/to/sci/game render 1 --seed tg609d
     <figcaption>Conquests of Camelot Demo <code>PIC.012</code></figcaption>
 </figure>
 
-
-
