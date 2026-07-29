@@ -1,6 +1,17 @@
 # @4bitlabs/scipainter
 
+[![License][license]][npm]
+[![NPM Version][version]][npm]
+[![Ko-fi][kofibadge]][kofi]
+
 ![Space Quest 3 Demo PIC.002](https://raw.githubusercontent.com/32bitkid/4bitlabs.scipainter/main/assets//r.sq3demo.002.webp)
+
+[npm]: https://www.npmjs.com/package/@4bitlabs/scipainter
+[version]: https://img.shields.io/npm/v/%404bitlabs%2Fscipainter
+[license]: https://img.shields.io/npm/l/%404bitlabs%2Fscipainter
+[dl]: https://img.shields.io/npm/dy/%404bitlabs%2Fscipainter
+[kofibadge]: https://shields.io/badge/ko--fi-donate-ff5f5f?logo=ko-fi&style=for-the-badgeKo-fi
+[kofi]: https://ko-fi.com/32bitkid
 
 ## Usage
 
@@ -71,7 +82,7 @@ And also set the output file:
 npx @4bitlabs/scipainter -r ./sq3demo render 2 -f webp --output sq3demo.002.webp
 ```
 
-## Randomness
+## Randomness and seeds
 
 Every render will, by default, select a random seed for the pRNG, this results in reach rendering 
 being unique. Using the same seed should produce the same visual result. Use the `--seed` option to
@@ -102,3 +113,7 @@ $ npx @4bitlabs/scipainter -r /path/to/sci/game render 1 --seed tg609d
     <figcaption>Conquests of Camelot Demo <code>PIC.012</code></figcaption>
 </figure>
 
+## Related Projects
+
+- Sierra SCI0/SCI01 parsing: https://github.com/32bitkid/sci.js
+- Procgen watercolor effect: https://github.com/32bitkid/watercolorizer
