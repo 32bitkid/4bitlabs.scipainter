@@ -1,5 +1,7 @@
 # @4bitlabs/scipainter
 
+![Space Quest 3 Demo PIC.002](https://raw.githubusercontent.com/32bitkid/4bitlabs.scipainter/main/assets//r.sq3demo.002.webp)
+
 ## Usage
 
 ```
@@ -87,3 +89,11 @@ $ npx @4bitlabs/scipainter -r /path/to/sci/game render 1 --seed tg609d
 > At this time, stable image regeneration—from the same seed—is _not_ guaranteed between 
 > different versions of this program. So, renderings with `1.1.0` may produce different results
 > than `1.5.0`, even using the same `seed`. This is a short-coming I may address in the future.
+
+## More Examples 
+
+Quest for Glory 1 Demo PIC.064:
+![Quest for Glory 1 Demo PIC.064](https://raw.githubusercontent.com/32bitkid/4bitlabs.scipainter/main/assets//r.qg1demo.064.webp)
+
+Conquests of Camelot Demo PIC.012:
+![Conquests of Camelot Demo PIC.012](https://raw.githubusercontent.com/32bitkid/4bitlabs.scipainter/main/assets//r.cocdemo.012.webp)
