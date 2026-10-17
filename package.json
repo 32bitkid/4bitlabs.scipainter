@@ -10,19 +10,18 @@
   "scripts": {
     "lint": "biome check",
     "build": "tsdown",
-    "exec": "",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "dependencies": {
-    "@4bitlabs/color": "^4.0.1",
-    "@4bitlabs/color-space": "^3.0.1",
-    "@4bitlabs/resize-filters": "^2.0.1",
-    "@4bitlabs/sci0": "^6.1.1",
-    "@4bitlabs/sci0-renderer": "^1.2.0",
+    "@4bitlabs/color": "^4.0.4",
+    "@4bitlabs/color-space": "^3.0.4",
+    "@4bitlabs/resize-filters": "^2.0.5",
+    "@4bitlabs/sci0": "^6.2.2",
+    "@4bitlabs/sci0-renderer": "^1.4.0",
     "@napi-rs/canvas": "^1.0.2",
-    "@watercolorizer/convolution": "^2.1.0",
-    "@watercolorizer/tracer": "^3.2.0",
-    "@watercolorizer/watercolorizer": "^2.1.0",
+    "@watercolorizer/convolution": "^2.1.1",
+    "@watercolorizer/tracer": "^3.2.1",
+    "@watercolorizer/watercolorizer": "^2.2.0",
     "commander": "^15.0.0",
     "pure-rand": "^8.4.2",
     "roughjs": "^4.6.6",

@@ -29,11 +29,11 @@ export async function markerLayer(
 
   ctx.globalCompositeOperation = 'multiply';
   /* marker layer */
-  for (const [idx, cmd, layers, meta] of picData) {
+  for (const [idx, cmd, layers, { visualPair }] of picData) {
     if (cmd[0] !== 'FILL') continue;
 
-    const [, [drawMode, drawCodes]] = cmd;
-    if (!DrawMode.isVisualMode(drawMode)) continue;
+    const [, [drawMode]] = cmd;
+    if (!DrawMode.isVisualMode(drawMode) || !visualPair) continue;
 
     const angle = gf64Rng(45, 5);
 
@@ -48,8 +48,7 @@ export async function markerLayer(
     rc.path(pathData, {
       fill: toCSS(
         resolveColor(
-          drawCodes,
-          meta.palettes,
+          visualPair,
           gf64Rng(0.5, 0.333),
           Math.max(0, gf64Rng(0.2, 0.075)),
         ),

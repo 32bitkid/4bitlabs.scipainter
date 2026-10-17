@@ -1,7 +1,3 @@
-export interface RngOptions {
-  rng?: () => number;
-}
-
 function gaussRng(rng: () => number, μ: number = 0, σ: number = 1) {
   const u = 1 - rng();
   const v = rng();

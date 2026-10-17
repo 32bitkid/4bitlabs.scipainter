@@ -34,11 +34,11 @@ export async function watercolorLayer(
 
   /* collect fills */
   const fills: (() => void)[] = [];
-  for (const [idx, cmd, layers, meta] of picData) {
+  for (const [idx, cmd, layers, { visualPair }] of picData) {
     if (cmd[0] !== 'FILL') continue;
 
-    const [, [drawMode, drawCodes]] = cmd;
-    if (!DrawMode.isVisualMode(drawMode)) continue;
+    const [, [drawMode]] = cmd;
+    if (!DrawMode.isVisualMode(drawMode) || !visualPair) continue;
 
     const result = extractDirtyPixels(layers.tBuffer, idx, { random: uf64Rng });
     const rings = trace(result, [320, 190]);
@@ -76,7 +76,7 @@ export async function watercolorLayer(
           pathPoly(ctx, poly);
         }
 
-        const color = resolveColor(drawCodes, meta.palettes, gf64Rng(0.5, 0.1));
+        const color = resolveColor(visualPair, gf64Rng(0.5, 0.1));
 
         ctx.fillStyle = // toCSS(setAlpha(color, gf64Rng(0.08, 0.05)));
           generateFillStyle(ctx, rings[0], color, uf64Rng, (min, max) =>

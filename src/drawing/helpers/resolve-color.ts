@@ -14,20 +14,10 @@ export const toCSS = ([, r, g, b, a = 1]: sRGBTuple) =>
   `rgba(${[r, g, b].map((it) => it.toFixed(0)).join(' ')} / ${(a * 100).toFixed(1)}%)`;
 
 export const resolveColor = (
-  drawCodes: DrawCodes,
-  palettes: [Uint8Array, Uint8Array, Uint8Array, Uint8Array],
+  [leftIdx, rightIdx]: [number, number],
   mixMode: 'left' | 'right' | 'both' | number,
   alpha: number = 1.0,
 ): sRGBTuple => {
-  const pal = (drawCodes[0] / 40) >>> 0;
-  const palette = palettes[pal];
-  if (palette === undefined) throw new Error(`pal(${pal}) is out of range`);
-  const palIndex = (drawCodes[0] % 40) >>> 0;
-  const color = palette[palIndex];
-  if (color === undefined)
-    throw new Error(`palIndex(${palette}) is out of range`);
-
-  const [leftIdx, rightIdx] = [color & 0b1111, (color >>> 4) & 0b1111];
   const [leftColor, rightColor] = [PALETTE[leftIdx], PALETTE[rightIdx]];
   if (leftColor === undefined)
     throw new Error(`leftIdx(${leftIdx}) is out of range`);
